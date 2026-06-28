@@ -21,76 +21,76 @@ export default function AdminPage() {
 
   const getRoleColor = (role: string) => {
     switch (role) {
-      case 'ADMIN': return 'bg-purple-100 text-purple-700'
-      case 'RECEPTIONIST': return 'bg-blue-100 text-blue-700'
-      case 'STYLIST': return 'bg-gray-100 text-gray-700'
-      default: return 'bg-gray-100 text-gray-700'
+      case 'ADMIN': return 'bg-gold-500/20 text-gold-400 border border-gold-500/30'
+      case 'RECEPTIONIST': return 'bg-blue-500/20 text-blue-400 border border-blue-500/30'
+      case 'STYLIST': return 'bg-gray-500/20 text-gray-400 border border-gray-500/30'
+      default: return 'bg-gray-500/20 text-gray-400 border border-gray-500/30'
     }
   }
 
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-bold text-gray-900">Administração</h1>
-        <p className="text-gray-500">Configurações do sistema</p>
+        <h1 className="text-2xl font-display font-bold text-gold-500">Administração</h1>
+        <p className="text-gold-500/60">Configurações do sistema</p>
       </div>
 
-      <div className="flex gap-2 border-b border-gray-200">
+      <div className="flex gap-2 border-b border-gold-500/20">
         <button
           onClick={() => setActiveTab('users')}
-          className={`px-4 py-3 border-b-2 ${
+          className={`px-4 py-3 border-b-2 transition-colors ${
             activeTab === 'users'
-              ? 'border-purple-600 text-purple-600'
-              : 'border-transparent text-gray-500'
+              ? 'border-gold-500 text-gold-500'
+              : 'border-transparent text-gold-500/50 hover:text-gold-500/70'
           }`}
         >
-          👥 Usuários
+          Usuários
         </button>
         <button
           onClick={() => setActiveTab('services')}
-          className={`px-4 py-3 border-b-2 ${
+          className={`px-4 py-3 border-b-2 transition-colors ${
             activeTab === 'services'
-              ? 'border-purple-600 text-purple-600'
-              : 'border-transparent text-gray-500'
+              ? 'border-gold-500 text-gold-500'
+              : 'border-transparent text-gold-500/50 hover:text-gold-500/70'
           }`}
         >
-          ✂️ Serviços
+          Serviços
         </button>
         <button
           onClick={() => setActiveTab('salon')}
-          className={`px-4 py-3 border-b-2 ${
+          className={`px-4 py-3 border-b-2 transition-colors ${
             activeTab === 'salon'
-              ? 'border-purple-600 text-purple-600'
-              : 'border-transparent text-gray-500'
+              ? 'border-gold-500 text-gold-500'
+              : 'border-transparent text-gold-500/50 hover:text-gold-500/70'
           }`}
         >
-          🏠 Salão
+          Salão
         </button>
       </div>
 
       {activeTab === 'users' && (
-        <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+        <div className="bg-salon-dark rounded-xl border border-gold-500/20 p-6">
           <div className="flex justify-between items-center mb-4">
-            <h2 className="text-lg font-semibold text-gray-900">Usuários do Sistema</h2>
-            <button className="bg-purple-600 text-white px-4 py-2 rounded-lg">
+            <h2 className="text-lg font-display font-semibold text-gold-500">Usuários do Sistema</h2>
+            <button className="bg-gold-500 text-salon-black px-4 py-2 rounded-lg hover:bg-gold-400 font-bold">
               + Novo Usuário
             </button>
           </div>
           <div className="overflow-x-auto">
             <table className="w-full">
               <thead>
-                <tr className="border-b border-gray-200">
-                  <th className="text-left py-3 px-4 text-sm font-medium text-gray-500">Nome</th>
-                  <th className="text-left py-3 px-4 text-sm font-medium text-gray-500">Email</th>
-                  <th className="text-left py-3 px-4 text-sm font-medium text-gray-500">Função</th>
-                  <th className="text-left py-3 px-4 text-sm font-medium text-gray-500">Status</th>
+                <tr className="border-b border-gold-500/20">
+                  <th className="text-left py-3 px-4 text-sm font-medium text-gold-500/70">Nome</th>
+                  <th className="text-left py-3 px-4 text-sm font-medium text-gold-500/70">Email</th>
+                  <th className="text-left py-3 px-4 text-sm font-medium text-gold-500/70">Função</th>
+                  <th className="text-left py-3 px-4 text-sm font-medium text-gold-500/70">Status</th>
                 </tr>
               </thead>
               <tbody>
                 {users.map((user) => (
-                  <tr key={user.id} className="border-b border-gray-100 last:border-0">
-                    <td className="py-3 px-4 text-sm font-medium text-gray-900">{user.name}</td>
-                    <td className="py-3 px-4 text-sm text-gray-600">{user.email}</td>
+                  <tr key={user.id} className="border-b border-gold-500/10 last:border-0 hover:bg-gold-500/5">
+                    <td className="py-3 px-4 text-sm font-medium text-white">{user.name}</td>
+                    <td className="py-3 px-4 text-sm text-gray-400">{user.email}</td>
                     <td className="py-3 px-4">
                       <span className={`px-2 py-1 text-xs font-medium rounded ${getRoleColor(user.role)}`}>
                         {getRoleLabel(user.role)}
@@ -98,7 +98,7 @@ export default function AdminPage() {
                     </td>
                     <td className="py-3 px-4">
                       <span className={`px-2 py-1 text-xs font-medium rounded ${
-                        user.isActive ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'
+                        user.isActive ? 'bg-green-500/20 text-green-400 border border-green-500/30' : 'bg-red-500/20 text-red-400 border border-red-500/30'
                       }`}>
                         {user.isActive ? 'Ativo' : 'Inativo'}
                       </span>
@@ -112,29 +112,29 @@ export default function AdminPage() {
       )}
 
       {activeTab === 'services' && (
-        <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
-          <h2 className="text-lg font-semibold text-gray-900 mb-4">Gestão de Serviços</h2>
-          <p className="text-gray-500">Gerencie os serviços oferecidos pelo salão.</p>
+        <div className="bg-salon-dark rounded-xl border border-gold-500/20 p-6">
+          <h2 className="text-lg font-display font-semibold text-gold-500 mb-4">Gestão de Serviços</h2>
+          <p className="text-gold-500/60">Gerencie os serviços oferecidos pelo salão.</p>
         </div>
       )}
 
       {activeTab === 'salon' && (
-        <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
-          <h2 className="text-lg font-semibold text-gray-900 mb-4">Informações do Salão</h2>
+        <div className="bg-salon-dark rounded-xl border border-gold-500/20 p-6">
+          <h2 className="text-lg font-display font-semibold text-gold-500 mb-4">Informações do Salão</h2>
           <div className="space-y-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Nome do Salão</label>
-              <input type="text" className="w-full px-3 py-2 border border-gray-300 rounded-lg" defaultValue="SA Salão" />
+              <label className="block text-sm font-medium text-gold-500/80 mb-1">Nome do Salão</label>
+              <input type="text" className="w-full px-3 py-2 bg-salon-black border border-gold-500/30 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-gold-500" defaultValue="Elaine Cabeleireiro" />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Endereço</label>
-              <input type="text" className="w-full px-3 py-2 border border-gray-300 rounded-lg" defaultValue="Rua Example, 123" />
+              <label className="block text-sm font-medium text-gold-500/80 mb-1">Endereço</label>
+              <input type="text" className="w-full px-3 py-2 bg-salon-black border border-gold-500/30 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-gold-500" defaultValue="Estr. de Benfica 749, 1500-110 Lisboa" />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Telefone</label>
-              <input type="text" className="w-full px-3 py-2 border border-gray-300 rounded-lg" defaultValue="(11) 99999-9999" />
+              <label className="block text-sm font-medium text-gold-500/80 mb-1">Telefone</label>
+              <input type="text" className="w-full px-3 py-2 bg-salon-black border border-gold-500/30 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-gold-500" defaultValue="+351 215 853 396" />
             </div>
-            <button className="bg-purple-600 text-white px-4 py-2 rounded-lg">Salvar Alterações</button>
+            <button className="bg-gold-500 text-salon-black px-4 py-2 rounded-lg hover:bg-gold-400 font-bold">Salvar Alterações</button>
           </div>
         </div>
       )}

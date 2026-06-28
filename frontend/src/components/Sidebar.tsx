@@ -36,31 +36,40 @@ export default function Sidebar() {
     <>
       <button
         type="button"
-        className="lg:hidden fixed top-4 left-4 z-50 p-2 bg-white rounded-lg shadow-md"
+        className="lg:hidden fixed top-4 left-4 z-50 p-2 bg-salon-black rounded-lg shadow-md"
         onClick={() => setIsOpen(!isOpen)}
       >
-        {isOpen ? <X size={24} /> : <Menu size={24} />}
+        {isOpen ? <X size={24} className="text-gold-500" /> : <Menu size={24} className="text-gold-500" />}
       </button>
 
       {isOpen && (
         <div 
-          className="lg:hidden fixed inset-0 bg-black/50 z-40"
+          className="lg:hidden fixed inset-0 bg-black/70 z-40"
           onClick={() => setIsOpen(false)}
         />
       )}
 
       <aside className={`
-        fixed inset-y-0 left-0 z-40 w-64 bg-white border-r border-gray-200 
+        fixed inset-y-0 left-0 z-40 w-64 bg-salon-black border-r border-gold-500/20 
         transform transition-transform duration-300 ease-in-out
         lg:translate-x-0
         ${isOpen ? 'translate-x-0' : '-translate-x-full'}
       `}>
         <div className="flex flex-col h-full">
-          <div className="p-6 border-b border-gray-200">
-            <h1 className="text-xl font-bold text-primary-600">SA Salão</h1>
-            <p className="text-sm text-gray-500 mt-1">Sistema de Agendamento</p>
+          {/* Logo */}
+          <div className="p-6 border-b border-gold-500/20">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-full bg-gold-500 flex items-center justify-center">
+                <Scissors size={20} className="text-salon-black" />
+              </div>
+              <div>
+                <h1 className="text-lg font-display font-bold text-gold-500">Elaine</h1>
+                <p className="text-xs text-gold-500/70 tracking-widest">CABELEIREIRO</p>
+              </div>
+            </div>
           </div>
 
+          {/* Navigation */}
           <nav className="flex-1 p-4 space-y-1">
             {menuItems
               .filter((item) => item.roles.includes(userRole))
@@ -74,10 +83,10 @@ export default function Sidebar() {
                   to={item.path}
                   onClick={() => setIsOpen(false)}
                   className={`
-                    flex items-center gap-3 px-4 py-3 rounded-lg transition-colors
+                    flex items-center gap-3 px-4 py-3 rounded-lg transition-all duration-200
                     ${isActive 
-                      ? 'bg-primary-50 text-primary-600' 
-                      : 'text-gray-600 hover:bg-gray-50'}
+                      ? 'bg-gold-500/10 text-gold-500 border-l-2 border-gold-500' 
+                      : 'text-gray-400 hover:bg-gold-500/5 hover:text-gold-500/80'}
                   `}
                 >
                   <Icon size={20} />
@@ -87,10 +96,11 @@ export default function Sidebar() {
             })}
           </nav>
 
-          <div className="p-4 border-t border-gray-200">
-            <div className="px-4 py-2">
-              <p className="text-sm font-medium text-gray-900">{user?.name}</p>
-              <p className="text-xs text-gray-500">{user?.role}</p>
+          {/* User Info */}
+          <div className="p-4 border-t border-gold-500/20">
+            <div className="px-4 py-3 bg-salon-dark rounded-lg">
+              <p className="text-sm font-medium text-gold-500">{user?.name}</p>
+              <p className="text-xs text-gold-500/60 mt-1">{user?.role}</p>
             </div>
           </div>
         </div>

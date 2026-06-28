@@ -136,19 +136,19 @@ export default function AppointmentsPage() {
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case 'CONFIRMED': return 'bg-green-100 text-green-700'
-      case 'SCHEDULED': return 'bg-yellow-100 text-yellow-700'
-      case 'COMPLETED': return 'bg-blue-100 text-blue-700'
-      case 'CANCELLED': return 'bg-gray-200 text-gray-600'
-      case 'NO_SHOW': return 'bg-red-100 text-red-700'
-      default: return 'bg-gray-100 text-gray-600'
+      case 'CONFIRMED': return 'bg-green-500/20 text-green-400 border border-green-500/30'
+      case 'SCHEDULED': return 'bg-gold-500/20 text-gold-400 border border-gold-500/30'
+      case 'COMPLETED': return 'bg-blue-500/20 text-blue-400 border border-blue-500/30'
+      case 'CANCELLED': return 'bg-gray-500/20 text-gray-400 border border-gray-500/30'
+      case 'NO_SHOW': return 'bg-red-500/20 text-red-400 border border-red-500/30'
+      default: return 'bg-gray-500/20 text-gray-400 border border-gray-500/30'
     }
   }
 
   if (loading) {
     return (
       <div className="flex items-center justify-center h-64">
-        <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-purple-600"></div>
+        <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-gold-500"></div>
       </div>
     )
   }
@@ -157,28 +157,28 @@ export default function AppointmentsPage() {
     <div className="space-y-6">
       <div className="flex justify-between items-center">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Atendimentos</h1>
-          <p className="text-gray-500">Gerencie os agendamentos</p>
+          <h1 className="text-2xl font-display font-bold text-gold-500">Atendimentos</h1>
+          <p className="text-gold-500/60">Gerencie os agendamentos</p>
         </div>
         <button
           onClick={() => setShowModal(true)}
-          className="flex items-center gap-2 bg-purple-600 text-white px-4 py-2 rounded-lg hover:bg-purple-700"
+          className="flex items-center gap-2 bg-gold-500 text-salon-black px-4 py-2 rounded-lg hover:bg-gold-400 font-bold"
         >
           <Plus size={20} />
           Novo Atendimento
         </button>
       </div>
 
-      <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+      <div className="bg-salon-dark rounded-xl border border-gold-500/20 p-6">
         <div className="flex gap-2 mb-6 overflow-x-auto pb-2">
           {dates.map((date, i) => (
             <button
               key={i}
               onClick={() => setSelectedDate(date)}
-              className={`flex-shrink-0 p-4 rounded-xl text-center transition-colors ${
+              className={`flex-shrink-0 p-4 rounded-xl text-center transition-all ${
                 date.toDateString() === selectedDate.toDateString()
-                  ? 'bg-purple-100 text-purple-700'
-                  : 'bg-gray-50 text-gray-600 hover:bg-gray-100'
+                  ? 'bg-gold-500 text-salon-black'
+                  : 'bg-salon-black text-gold-500/70 hover:bg-gold-500/10 border border-gold-500/20'
               }`}
             >
               <p className="text-xs">
@@ -190,8 +190,8 @@ export default function AppointmentsPage() {
         </div>
 
         {appointments.length === 0 ? (
-          <div className="text-center py-8 text-gray-500">
-            <Calendar size={40} className="mx-auto mb-3 text-gray-300" />
+          <div className="text-center py-8 text-gold-500/50">
+            <Calendar size={40} className="mx-auto mb-3 text-gold-500/30" />
             <p>Nenhum atendimento para esta data</p>
           </div>
         ) : (
@@ -201,19 +201,19 @@ export default function AppointmentsPage() {
               return (
                 <div
                   key={apt.id}
-                  className="flex items-center gap-4 p-4 bg-gray-50 rounded-xl"
+                  className="flex items-center gap-4 p-4 bg-salon-black rounded-xl border border-gold-500/10"
                 >
-                  <div className="p-2 bg-purple-100 text-purple-600 rounded-lg">
+                  <div className="p-2 bg-gold-500/10 text-gold-500 rounded-lg">
                     <Calendar size={20} />
                   </div>
                   <div className="flex-1">
-                    <p className="font-medium text-gray-900">
+                    <p className="font-medium text-white">
                       {time.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}
                     </p>
-                    <p className="text-sm text-gray-500">
+                    <p className="text-sm text-gray-400">
                       {apt.customer.name} • {apt.service.name}
                     </p>
-                    <p className="text-xs text-gray-400">
+                    <p className="text-xs text-gold-500/60">
                       {apt.staff.user.name}
                     </p>
                   </div>
@@ -225,13 +225,13 @@ export default function AppointmentsPage() {
                       <div className="flex gap-1">
                         <button
                           onClick={() => handleStatusChange(apt.id, 'CONFIRMED')}
-                          className="text-xs px-2 py-1 bg-green-100 text-green-700 rounded hover:bg-green-200"
+                          className="text-xs px-2 py-1 bg-green-500/20 text-green-400 rounded hover:bg-green-500/30 border border-green-500/30"
                         >
                           Confirmar
                         </button>
                         <button
                           onClick={() => handleStatusChange(apt.id, 'CANCELLED')}
-                          className="text-xs px-2 py-1 bg-red-100 text-red-700 rounded hover:bg-red-200"
+                          className="text-xs px-2 py-1 bg-red-500/20 text-red-400 rounded hover:bg-red-500/30 border border-red-500/30"
                         >
                           Cancelar
                         </button>
@@ -240,7 +240,7 @@ export default function AppointmentsPage() {
                     {apt.status === 'CONFIRMED' && (
                       <button
                         onClick={() => handleStatusChange(apt.id, 'COMPLETED')}
-                        className="text-xs px-2 py-1 bg-blue-100 text-blue-700 rounded hover:bg-blue-200"
+                        className="text-xs px-2 py-1 bg-blue-500/20 text-blue-400 rounded hover:bg-blue-500/30 border border-blue-500/30"
                       >
                         Concluir
                       </button>
@@ -254,26 +254,26 @@ export default function AppointmentsPage() {
       </div>
 
       {showModal && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-xl p-6 w-full max-w-md mx-4">
+        <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50">
+          <div className="bg-salon-dark border border-gold-500/20 rounded-xl p-6 w-full max-w-md mx-4">
             <div className="flex justify-between items-center mb-4">
-              <h2 className="text-lg font-semibold text-gray-900">Novo Atendimento</h2>
-              <button onClick={() => setShowModal(false)} className="text-gray-500 hover:text-gray-700">
+              <h2 className="text-lg font-display font-semibold text-gold-500">Novo Atendimento</h2>
+              <button onClick={() => setShowModal(false)} className="text-gold-500/70 hover:text-gold-500">
                 <X size={20} />
               </button>
             </div>
             {error && (
-              <div className="p-3 bg-red-50 border border-red-200 text-red-600 rounded-lg text-sm mb-4">
+              <div className="p-3 bg-red-500/10 border border-red-500/30 text-red-400 rounded-lg text-sm mb-4">
                 {error}
               </div>
             )}
             <form onSubmit={handleCreate} className="space-y-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Cliente</label>
+                <label className="block text-sm font-medium text-gold-500/80 mb-1">Cliente</label>
                 <select
                   value={form.customerId}
                   onChange={(e) => setForm({ ...form, customerId: e.target.value })}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
+                  className="w-full px-3 py-2 bg-salon-black border border-gold-500/30 rounded-lg focus:outline-none focus:ring-2 focus:ring-gold-500 text-white"
                   required
                 >
                   <option value="">Selecione um cliente</option>
@@ -283,11 +283,11 @@ export default function AppointmentsPage() {
                 </select>
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Serviço</label>
+                <label className="block text-sm font-medium text-gold-500/80 mb-1">Serviço</label>
                 <select
                   value={form.serviceId}
                   onChange={(e) => setForm({ ...form, serviceId: e.target.value })}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
+                  className="w-full px-3 py-2 bg-salon-black border border-gold-500/30 rounded-lg focus:outline-none focus:ring-2 focus:ring-gold-500 text-white"
                   required
                 >
                   <option value="">Selecione um serviço</option>
@@ -298,11 +298,11 @@ export default function AppointmentsPage() {
               </div>
               {!isProfessional && (
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Profissional</label>
+                  <label className="block text-sm font-medium text-gold-500/80 mb-1">Profissional</label>
                   <select
                     value={form.staffId}
                     onChange={(e) => setForm({ ...form, staffId: e.target.value })}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
+                    className="w-full px-3 py-2 bg-salon-black border border-gold-500/30 rounded-lg focus:outline-none focus:ring-2 focus:ring-gold-500 text-white"
                     required
                   >
                     <option value="">Selecione um profissional</option>
@@ -313,27 +313,27 @@ export default function AppointmentsPage() {
                 </div>
               )}
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Data e Hora</label>
+                <label className="block text-sm font-medium text-gold-500/80 mb-1">Data e Hora</label>
                 <input
                   type="datetime-local"
                   value={form.startTime}
                   onChange={(e) => setForm({ ...form, startTime: e.target.value })}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
+                  className="w-full px-3 py-2 bg-salon-black border border-gold-500/30 rounded-lg focus:outline-none focus:ring-2 focus:ring-gold-500 text-white"
                   required
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Observações</label>
+                <label className="block text-sm font-medium text-gold-500/80 mb-1">Observações</label>
                 <textarea
                   value={form.notes}
                   onChange={(e) => setForm({ ...form, notes: e.target.value })}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
+                  className="w-full px-3 py-2 bg-salon-black border border-gold-500/30 rounded-lg focus:outline-none focus:ring-2 focus:ring-gold-500 text-white"
                   rows={2}
                 />
               </div>
               <button
                 type="submit"
-                className="w-full bg-purple-600 text-white py-2 rounded-lg hover:bg-purple-700"
+                className="w-full bg-gold-500 text-salon-black py-2 rounded-lg hover:bg-gold-400 font-bold"
               >
                 Criar Atendimento
               </button>
