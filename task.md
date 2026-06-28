@@ -1,175 +1,192 @@
-<system-reminder>Your operational mode has changed from plan to build. You are no longer in read-only mode.</system-reminder>
+# Task Backlog — SA Salão
 
-Task Backlog — MVP Salão Único (mobile-first com TailwindCSS)
+## Status
 
-1) Preparar ambiente do repositório
-- Descrição: configurar repositório, dependências e scripts básicos (frontend + backend) para iniciar o MVP.
-- Critérios de aceitação:
-  - Repositório com pastas src/frontend e src/backend; setup básico de TS/tsconfig
-  - Scripts de build/run para frontend e backend
-- Estimativa: 4h
-- Dependências: nenhuma
+| Estado | Descrição |
+|--------|-----------|
+| ✅ | Concluído |
+| 🔄 | Em progresso |
+| ⏳ | Pendente |
 
-2) Configurar Tailwind no frontend
-- Descrição: instalar TailwindCSS, configurar postcss, purge/presence de conteúdo, e criar estilo base com tokens de design
-- Critérios de aceitação:
-  - Tailwind funcionando com classes utilitárias disponíveis
-  - Tema/modo mobile-first aplicado ao layout base
-- Estimativa: 6h
-- Dependências: Preparar estrutura de pastas de styles
+---
 
-3) Estruturar frontend com routing
-- Descrição: criar estrutura de React com rotas simples (Login, Dashboard, Clientes, Serviços, Agenda)
-- Critérios de aceitação:
-  - Roteamento funcional entre páginas
-  - Proteção de rotas via autenticação básica (placeholder)
-- Estimativa: 6h
-- Dependências: Tailwind configurado
+## ✅ Tarefas Concluídas
 
-4) Configurar DB local com Postgres e Prisma
-- Descrição: levantar Postgres local (docker-compose opcional), configurar Prisma para conexão
-- Critérios de aceitação:
-  - Conexão Prisma estabelecida com o DB local
-  - Prisma Client gerado
-- Estimativa: 6h
-- Dependências: acesso a DB local
+### 1) Preparar ambiente do repositório
+- **Estado:** ✅ Concluído
+- Repositório com pastas `frontend` e `backend` (npm workspaces)
+- Scripts de build/run para frontend e backend
+- Docker Compose configurado
 
-5) Definir modelo Prisma (esquema inicial)
-- Descrição: criar esquema inicial com Salon, Staff, Customer, Service, Appointment, Schedule
-- Critérios de aceitação:
-  - Schema refletindo entidades do MVP
-  - FKs entre tabelas definidas
-- Estimativa: 6h
-- Dependências: DB e Prisma prontos
+### 2) Configurar Tailwind no frontend
+- **Estado:** ✅ Concluído
+- TailwindCSS 3.4 funcionando com classes utilitárias
+- Tema mobile-first com paleta primary (purple)
+- PostCSS configurado
 
-6) Gerar migrations e aplicar
-- Descrição: criar e aplicar migrations do Prisma no DB local
-- Critérios de aceitação:
-  - Migrations geradas e aplicadas com sucesso
-- Estimativa: 2h
-- Dependências: Esquema Prisma pronto
+### 3) Estruturar frontend com routing
+- **Estado:** ✅ Concluído
+- React Router DOM 6.22 com rotas: Login, Dashboard, Clientes, Serviços, Atendimentos, Agenda, Profissionais, Relatórios, Admin
+- ProtectedRoute com autenticação via AuthContext
+- Sidebar com role-based filtering
 
-7) Implementar autenticação (Auth)
-- Descrição: fluxo de login/logout, JWT com refresh token
-- Critérios de aceitação:
-  - Endpoints de login/refresh funcionando; tokens válidos
-- Estimativa: 12h
-- Dependências: Prisma models (User, Salon) e RBAC
+### 4) Configurar DB local com Postgres e Prisma
+- **Estado:** ✅ Concluído
+- PostgreSQL 15 local configurado
+- Prisma 5.10 com schema completo
+- Conexão via `127.0.0.1:5432`
 
-8) Implementar RBAC (roles)
-- Descrição: definir papéis admin, receptionist, stylist com permissões básicas
-- Critérios de aceitação:
-  - Middleware/guards para autorização
-  - Diferentes acessos conforme o papel
-- Estimativa: 8h
-- Dependências: Auth
+### 5) Definir modelo Prisma (esquema completo)
+- **Estado:** ✅ Concluído
+- Models: Salon, User, Staff, Customer, Service, Schedule, Appointment, RefreshToken, AuditLog
+- Enums: UserRole, AppointmentStatus
+- Relações FK configuradas com cascade
+- Defaults para Portugal (EUR, PT, Europe/Lisbon)
 
-9) Serviço de Clientes (CRUD)
-- Descrição: CRUD de clientes, histórico de atendimentos
-- Critérios de aceitação:
-  - Endpoints create/read/update/delete; validações
-  - Associação de atendimentos ao cliente
-- Estimativa: 12h
-- Dependências: Prisma models (Customer, Appointment)
+### 6) Gerar migrations e aplicar
+- **Estado:** ✅ Concluído
+- `prisma db push` aplicado com sucesso
+- Prisma Client gerado
 
-10) Catálogo de Serviços (CRUD)
-- Descrição: CRUD de serviços (nome, duração, preço, categoria)
-- Critérios de aceitação:
-  - Endpoints CRUD; validações de duração/preço
-- Estimativa: 12h
-- Dependências: Service
+### 7) Implementar autenticação (Auth)
+- **Estado:** ✅ Concluído
+- Login via JWT com access token (15min) + refresh token (7d)
+- Refresh token armazenado em httpOnly cookie
+- Endpoint `/api/auth/refresh` para renovação automática
+- Endpoint `/api/auth/logout` para revogação do refresh token
+- Frontend auto-refresh 1 min antes de expirar
 
-11) Agenda de Staff (horários)
-- Descrição: horários de trabalho por profissional; disponibilidade
-- Critérios de aceitação:
-  - CRUD de Schedule; associação com Staff
-- Estimativa: 10h
-- Dependências: Staff
+### 8) Implementar RBAC (roles)
+- **Estado:** ✅ Concluído
+- Roles: ADMIN, RECEPTIONIST, STYLIST
+- Middleware `requireRole()` para controle de acesso
+- Sidebar esconde itens conforme papel do usuário
+- Profissionais (STYLIST) veem apenas seus próprios agendamentos
 
-12) Marcação de Atendimentos
-- Descrição: criar reserva associando cliente, serviço, staff, horário
-- Critérios de aceitação:
-  - Reserva válida com conflitos de horário evitados
-- Estimativa: 12h
-- Dependências: Cliente, Service, Staff, Schedule
+### 9) Serviço de Clientes (CRUD)
+- **Estado:** ✅ Concluído
+- `GET/POST/PUT/DELETE /api/clients`
+- Frontend integrado com API real + modal de criação
+- Validação Zod no backend
 
-13) Confirmações por e-mail (módulo básico)
-- Descrição: envio de confirmação por e-mail via serviço externo
-- Critérios de aceitação:
-  - E-mail de confirmação disparado após criação de atendimento
-- Estimativa: 8h
-- Dependências: Vínculo com serviço de envio (Mailgun/SendGrid)
+### 10) Catálogo de Serviços (CRUD)
+- **Estado:** ✅ Concluído
+- `GET/POST/PUT/DELETE /api/services`
+- Frontend integrado com API real + modal de criação
+- Validação Zod (duração 5-480min, preço positivo)
+- Preços formatados em EUR (€)
 
-14) Painel da Recepcionista
-- Descrição: dashboard com agenda, clientes, serviços e staff
-- Critérios de aceitação:
-  - Visualização clara da agenda do dia; ações rápidas (confirmação, remarcação)
-- Estimativa: 12h
-- Dependências: Frontend routing, Tailwind
+### 11) Marcação de Atendimentos
+- **Estado:** ✅ Concluído
+- `GET/POST/PUT /api/appointments`
+- Verificação de conflito de horário (não permite sobreposição)
+- Profissionais veem apenas seus agendamentos (`?my=true`)
+- Botões para confirmar/cancelar/concluir na UI
+- Validação Zod com UUID
 
-15) Relatórios básicos
-- Descrição: geração de relatório diário (faturamento, serviços mais pedidos, agenda)
-- Critérios de aceitação:
-  - Endpoints/UI para visualizar dados diários
-- Estimativa: 8h
-- Dependências: Data models, queries agregadas
+### 12) Painel da Recepcionista / Profissional
+- **Estado:** ✅ Concluído
+- Dashboard com estatísticas reais da API
+- Profissionais podem criar serviços e agendamentos
+- Admin pode gerenciar profissionais (ativar/desativar)
 
-16) Painel Administrativo
-- Descrição: acesso a gestão de clientes, serviços, staff, horários e relatórios
-- Critérios de aceitação:
-  - Acesso completo a CRUDs existentes; exportação de dados básica
-- Estimativa: 12h
-- Dependências: RBAC, UI
+### 13) Seed de dados inicial
+- **Estado:** ✅ Concluído
+- Seed com salão, 4 utilizadores, 10 serviços, 4 clientes, 3 agendamentos
+- Credenciais: admin@salon.com/admin123, ana@salon.com/stylist123, recep@salon.com/recep123
+- Preços adaptados para Portugal (EUR)
 
-17) Testes manuais e validação de fluxo
-- Descrição: validar fluxo de reserva, edição, cancelamento e relatórios
-- Critérios de aceitação:
-  - Fluxos sem erros críticos
-- Estimativa: 6h
-- Dependências: MVP funcional
+---
 
-18) Dockerização (frontend/backend)
-- Descrição: criar imagens Docker para frontend e backend
-- Critérios de aceitação:
-  - Builds separadas com Dockerfiles
-- Estimativa: 6h
-- Dependências: infra
+## 🔄 Tarefas em Progresso
 
-19) Orquestração com Docker Compose
-- Descrição: orquestrar frontend, backend e DB com compose
-- Critérios de aceitação:
-  - Compose up rodando localmente com dados de seed
-- Estimativa: 4h
-- Dependências: Dockerization
+### 14) Relatórios básicos
+- **Estado:** 🔄 Parcial
+- Endpoint `GET /api/reports/dashboard` com dados reais (faturamento calculado)
+- Frontend com dashboard conectado à API
+- Falta: relatórios de services mais pedidos, histórico por profissional
 
-20) CI/CD
-- Descrição: configurar pipeline de CI/CD (lint, test, build, deploy)
-- Critérios de aceitação:
-  - GitHub Actions runs com sucesso; artefatos gerados
-- Estimativa: 4h
-- Dependências: Compose
+### 15) Painel Administrativo
+- **Estado:** 🔄 Parcial
+- Página de Admin com gestão de utilizadores (mock data)
+- Gestão de profissionais integrada com API
+- Falta: gestão de salão integrada, exportação de dados
 
-21) Seed de dados inicial
-- Descrição: seed básico de salão, staff, serviços para ambiente local
-- Critérios de aceitação:
-  - DB populado com dados de exemplo
-- Estimativa: 6h
-- Dependências: DB
+---
 
-22) Documentação básica
-- Descrição: README + notas de arquitetura e setup
-- Critérios de aceitação:
-  - Guia de instalação e run completo
-- Estimativa: 4h
-- Dependências: Todas
+## ⏳ Tarefas Pendentes
 
-23) Planejamento multi-tenant (futuro)
-- Descrição: documento de visão/mudanças para migrar para multi-tenant
-- Critérios de aceitação:
-  - Cenários de tenant isolation mapeados; plano de migração
-- Estimativa: 4h
-- Dependências: MVP estável
+### 16) Agenda de Staff (horários)
+- **Estado:** ⏳ Pendente
+- Horários de trabalho por profissional; disponibilidade
+- Frontend SchedulePage com mock data
 
-Observações
-- As estimativas são aproximadas e podem ser ajustadas conforme a prioridade e a disponibilidade da equipe.
+### 17) Confirmações por e-mail
+- **Estado:** ⏳ Pendente
+- Envio de confirmação por e-mail via serviço externo
+
+### 18) Testes automatizados
+- **Estado:** ⏳ Pendente
+- Testes unitários e de integração
+
+### 19) Dockerização (frontend/backend)
+- **Estado:** ⏳ Pendente
+- Docker Compose configurado mas não testado
+
+### 20) CI/CD
+- **Estado:** ⏳ Pendente
+- GitHub Actions pipeline
+
+### 21) Documentação
+- **Estado:** ⏳ Pendente
+- README completo com guia de instalação
+
+---
+
+## Segurança Implementada
+
+| Medida | Estado | Descrição |
+|--------|--------|-----------|
+| Helmet.js | ✅ | Headers de segurança (CSP, HSTS, X-Frame-Options) |
+| Rate Limiting | ✅ | Geral (100/15min), Login (5/15min), API (60/min) |
+| CORS Restrito | ✅ | Apenas origem do frontend |
+| JWT Access Token | ✅ | Expira em 15 minutos |
+| JWT Refresh Token | ✅ | Expira em 7 dias (httpOnly cookie) |
+| Zod Validation | ✅ | Validação de schema em todas as rotas |
+| Senha Forte | ✅ | 8+ chars, maiúscula, minúscula, número, especial |
+| Audit Log | ✅ | Registra login, logout, CRUD |
+| Body Parsing Limit | ✅ | Máximo 10kb |
+| Compression | ✅ | Gzip para reduzir payload |
+| Morgan Logging | ✅ | Logging de todas as requests |
+| Verificação Conflito | ✅ | Não permite agendamentos sobrepostos |
+
+---
+
+## Adaptado para Portugal
+
+| Campo | De | Para |
+|-------|----|----|
+| País | BR | PT |
+| Moeda | BRL (R$) | EUR (€) |
+| Timezone | America/Sao_Paulo | Europe/Lisbon |
+| Formato moeda | R$ 50,00 | 50,00 € |
+| Telefones | (11) 99999-9999 | +351 900 000 000 |
+
+---
+
+## Credenciais de Teste
+
+| Perfil | Email | Senha |
+|--------|--------|-------|
+| Admin | admin@salon.com | admin123 |
+| Profissional | ana@salon.com | stylist123 |
+| Profissional | carlos@salon.com | stylist123 |
+| Recepcionista | recep@salon.com | recep123 |
+
+---
+
+## Observações
+
+- As estimativas são aproximadas e podem ser ajustadas conforme a prioridade.
 - O foco inicial é MVP Salão Único com base nas decisões de arquitetura discutidas.
+- Projeto adaptado para Portugal (Lisboa) com moeda EUR e timezone Europe/Lisbon.

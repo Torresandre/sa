@@ -27,9 +27,9 @@ model Salon {
   address   String?
   phone     String?
   email     String?
-  country   String   @default("BR")
-  currency  String   @default("BRL")
-  timezone  String   @default("America/Sao_Paulo")
+  country   String   @default("PT")
+  currency  String   @default("EUR")
+  timezone  String   @default("Europe/Lisbon")
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
@@ -49,7 +49,9 @@ model User {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  staff   Staff?
+  staff          Staff?
+  refreshTokens  RefreshToken[]
+  auditLogs      AuditLog[]
 }
 
 model Staff {
@@ -130,4 +132,34 @@ model Appointment {
   staff      Staff    @relation(fields: [staffId], references: [id], onDelete: Cascade)
   salonId    String
   salon      Salon    @relation(fields: [salonId], references: [id], onDelete: Cascade)
+}
+
+model RefreshToken {
+  id        String   @id @default(uuid())
+  token     String   @unique
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([token])
+  @@index([userId])
+  @@index([expiresAt])
+}
+
+model AuditLog {
+  id        String   @id @default(uuid())
+  action    String
+  details   String?
+  ip        String?
+  userAgent String?
+  createdAt DateTime @default(now())
+
+  userId String?
+  user   User?  @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  @@index([userId])
+  @@index([action])
+  @@index([createdAt])
 }

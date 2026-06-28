@@ -1,16 +1,94 @@
-export default function DashboardPage() {
-  const stats = [
-    { label: 'Atendimentos Hoje', value: '12' },
-    { label: 'Clientes', value: '156' },
-    { label: 'Serviços', value: '24' },
-    { label: 'Faturamento do Mês', value: 'R$ 12.450' },
-  ]
+import { useState, useEffect } from 'react'
+import { api } from '../services/api'
+import { formatCurrency } from '../utils/currency'
 
-  const recentAppointments = [
-    { id: 1, client: 'Maria Silva', service: 'Corte Feminino', time: '09:00', status: 'Confirmado' },
-    { id: 2, client: 'João Santos', service: 'Barba', time: '10:00', status: 'Aguardando' },
-    { id: 3, client: 'Ana Costa', service: 'Pintura', time: '11:00', status: 'Confirmado' },
-    { id: 4, client: 'Pedro Oliveira', service: 'Corte + Barba', time: '14:00', status: 'Confirmado' },
+interface DashboardStats {
+  todayAppointments: number
+  totalCustomers: number
+  totalServices: number
+  monthRevenue: number
+}
+
+interface Appointment {
+  id: string
+  startTime: string
+  customer: { name: string }
+  service: { name: string }
+  status: string
+}
+
+export default function DashboardPage() {
+  const [stats, setStats] = useState<DashboardStats>({
+    todayAppointments: 0,
+    totalCustomers: 0,
+    totalServices: 0,
+    monthRevenue: 0
+  })
+  const [recentAppointments, setRecentAppointments] = useState<Appointment[]>([])
+  const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    loadDashboard()
+  }, [])
+
+  const loadDashboard = async () => {
+    try {
+      const today = new Date()
+      today.setHours(0, 0, 0, 0)
+      const tomorrow = new Date(today)
+      tomorrow.setDate(tomorrow.getDate() + 1)
+
+      const [statsRes, appointmentsRes] = await Promise.all([
+        api.get('/reports/dashboard'),
+        api.get('/appointments', {
+          params: { startDate: today.toISOString(), endDate: tomorrow.toISOString() }
+        })
+      ])
+
+      setStats(statsRes.data)
+      setRecentAppointments(appointmentsRes.data.slice(0, 5))
+    } catch (err) {
+      console.error('Erro ao carregar dashboard:', err)
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const getStatusColor = (status: string) => {
+    switch (status) {
+      case 'CONFIRMED': return 'bg-green-100 text-green-700'
+      case 'SCHEDULED': return 'bg-yellow-100 text-yellow-700'
+      case 'COMPLETED': return 'bg-blue-100 text-blue-700'
+      case 'CANCELLED': return 'bg-gray-200 text-gray-600'
+      case 'NO_SHOW': return 'bg-red-100 text-red-700'
+      default: return 'bg-gray-100 text-gray-600'
+    }
+  }
+
+  const getStatusLabel = (status: string) => {
+    switch (status) {
+      case 'CONFIRMED': return 'Confirmado'
+      case 'SCHEDULED': return 'Aguardando'
+      case 'COMPLETED': return 'Concluído'
+      case 'CANCELLED': return 'Cancelado'
+      case 'NO_SHOW': return 'Não Compareceu'
+      default: return status
+    }
+  }
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-purple-600"></div>
+      </div>
+    )
+  }
+
+  const statsList = [
+    { label: 'Atendimentos Hoje', value: stats.todayAppointments.toString() },
+    { label: 'Clientes', value: stats.totalCustomers.toString() },
+    { label: 'Serviços', value: stats.totalServices.toString() },
+    { label: 'Faturamento do Mês', value: formatCurrency(stats.monthRevenue) },
   ]
 
   return (
@@ -21,7 +99,7 @@ export default function DashboardPage() {
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        {stats.map((stat) => (
+        {statsList.map((stat) => (
           <div key={stat.label} className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
             <p className="text-2xl font-bold text-gray-900">{stat.value}</p>
             <p className="text-sm text-gray-500">{stat.label}</p>
@@ -42,22 +120,28 @@ export default function DashboardPage() {
               </tr>
             </thead>
             <tbody>
-              {recentAppointments.map((apt) => (
-                <tr key={apt.id} className="border-b border-gray-100 last:border-0">
-                  <td className="py-3 px-4 text-sm font-medium text-gray-900">{apt.time}</td>
-                  <td className="py-3 px-4 text-sm text-gray-600">{apt.client}</td>
-                  <td className="py-3 px-4 text-sm text-gray-600">{apt.service}</td>
-                  <td className="py-3 px-4">
-                    <span className={`inline-flex px-2 py-1 text-xs font-medium rounded-full ${
-                      apt.status === 'Confirmado' 
-                        ? 'bg-green-100 text-green-700' 
-                        : 'bg-yellow-100 text-yellow-700'
-                    }`}>
-                      {apt.status}
-                    </span>
-                  </td>
+              {recentAppointments.map((apt) => {
+                const time = new Date(apt.startTime)
+                return (
+                  <tr key={apt.id} className="border-b border-gray-100 last:border-0">
+                    <td className="py-3 px-4 text-sm font-medium text-gray-900">
+                      {time.toLocaleTimeString('pt-PT', { hour: '2-digit', minute: '2-digit' })}
+                    </td>
+                    <td className="py-3 px-4 text-sm text-gray-600">{apt.customer.name}</td>
+                    <td className="py-3 px-4 text-sm text-gray-600">{apt.service.name}</td>
+                    <td className="py-3 px-4">
+                      <span className={`inline-flex px-2 py-1 text-xs font-medium rounded-full ${getStatusColor(apt.status)}`}>
+                        {getStatusLabel(apt.status)}
+                      </span>
+                    </td>
+                  </tr>
+                )
+              })}
+              {recentAppointments.length === 0 && (
+                <tr>
+                  <td colSpan={4} className="py-8 text-center text-gray-500">Nenhum atendimento hoje</td>
                 </tr>
-              ))}
+              )}
             </tbody>
           </table>
         </div>

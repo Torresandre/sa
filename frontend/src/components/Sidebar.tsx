@@ -8,19 +8,21 @@ import {
   Clock, 
   BarChart3, 
   Settings,
+  Briefcase,
   Menu,
   X
 } from 'lucide-react'
 import { useAuth } from '../context/AuthContext'
 
 const menuItems = [
-  { path: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
-  { path: '/clients', label: 'Clientes', icon: Users },
-  { path: '/services', label: 'Serviços', icon: Scissors },
-  { path: '/appointments', label: 'Atendimentos', icon: Calendar },
-  { path: '/schedule', label: 'Agenda', icon: Clock },
-  { path: '/reports', label: 'Relatórios', icon: BarChart3 },
-  { path: '/admin', label: 'Administração', icon: Settings },
+  { path: '/dashboard', label: 'Dashboard', icon: LayoutDashboard, roles: ['ADMIN', 'RECEPTIONIST', 'STYLIST'] },
+  { path: '/clients', label: 'Clientes', icon: Users, roles: ['ADMIN', 'RECEPTIONIST', 'STYLIST'] },
+  { path: '/services', label: 'Serviços', icon: Scissors, roles: ['ADMIN', 'RECEPTIONIST', 'STYLIST'] },
+  { path: '/appointments', label: 'Atendimentos', icon: Calendar, roles: ['ADMIN', 'RECEPTIONIST', 'STYLIST'] },
+  { path: '/schedule', label: 'Agenda', icon: Clock, roles: ['ADMIN', 'RECEPTIONIST', 'STYLIST'] },
+  { path: '/professionals', label: 'Profissionais', icon: Briefcase, roles: ['ADMIN', 'STYLIST'] },
+  { path: '/reports', label: 'Relatórios', icon: BarChart3, roles: ['ADMIN', 'RECEPTIONIST'] },
+  { path: '/admin', label: 'Administração', icon: Settings, roles: ['ADMIN'] },
 ]
 
 export default function Sidebar() {
@@ -28,7 +30,7 @@ export default function Sidebar() {
   const location = useLocation()
   const { user } = useAuth()
 
-  const isAdmin = user?.role === 'ADMIN'
+  const userRole = user?.role || ''
 
   return (
     <>
@@ -60,9 +62,9 @@ export default function Sidebar() {
           </div>
 
           <nav className="flex-1 p-4 space-y-1">
-            {menuItems.map((item) => {
-              if (item.path === '/admin' && !isAdmin) return null
-              
+            {menuItems
+              .filter((item) => item.roles.includes(userRole))
+              .map((item) => {
               const isActive = location.pathname === item.path
               const Icon = item.icon
               
