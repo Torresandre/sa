@@ -8,9 +8,11 @@ const { PrismaClient } = require('@prisma/client');
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const { z } = require('zod');
+const { encryptionMiddleware } = require('./middleware/encryption');
 
 const app = express();
 const prisma = new PrismaClient();
+prisma.$use(encryptionMiddleware(prisma));
 const PORT = process.env.PORT || 4000;
 const JWT_SECRET = process.env.JWT_SECRET || 'your-super-secret-jwt-key-change-in-production';
 const JWT_REFRESH_SECRET = process.env.JWT_REFRESH_SECRET || 'your-refresh-secret-change-in-production';
@@ -259,7 +261,8 @@ app.post('/api/auth/login', validate(loginSchema), async (req, res) => {
     res.cookie('refreshToken', refreshToken, {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
-      sameSite: 'strict',
+      sameSite: 'lax',
+      path: '/',
       maxAge: 7 * 24 * 60 * 60 * 1000
     });
 
@@ -323,7 +326,8 @@ app.post('/api/auth/refresh', async (req, res) => {
     res.cookie('refreshToken', newRefreshToken, {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
-      sameSite: 'strict',
+      sameSite: 'lax',
+      path: '/',
       maxAge: 7 * 24 * 60 * 60 * 1000
     });
 
@@ -679,6 +683,291 @@ app.get('/api/reports/dashboard', authenticateToken, async (req, res) => {
     res.json({ todayAppointments, totalCustomers, totalServices, monthRevenue });
   } catch (error) {
     res.status(500).json({ error: 'Erro ao buscar dados' });
+  }
+});
+
+// ============ REPORTS - TOP SERVICES ============
+
+app.get('/api/reports/top-services', authenticateToken, async (req, res) => {
+  try {
+    const { startDate, endDate } = req.query;
+    const where = {
+      salonId: req.user.salonId,
+      status: 'COMPLETED',
+    };
+    if (startDate || endDate) {
+      where.startTime = {};
+      if (startDate) where.startTime.gte = new Date(startDate);
+      if (endDate) where.startTime.lte = new Date(endDate + 'T23:59:59');
+    }
+
+    const appointments = await prisma.appointment.findMany({
+      where,
+      include: { service: { select: { id: true, name: true, price: true } } }
+    });
+
+    const serviceMap = {};
+    appointments.forEach(apt => {
+      const s = apt.service;
+      if (!serviceMap[s.id]) serviceMap[s.id] = { name: s.name, count: 0, revenue: 0 };
+      serviceMap[s.id].count++;
+      serviceMap[s.id].revenue += s.price;
+    });
+
+    const topServices = Object.values(serviceMap)
+      .sort((a, b) => b.count - a.count)
+      .slice(0, 10);
+
+    res.json(topServices);
+  } catch (error) {
+    res.status(500).json({ error: 'Erro ao buscar serviços mais pedidos' });
+  }
+});
+
+// ============ REPORTS - STAFF HISTORY ============
+
+app.get('/api/reports/staff-history', authenticateToken, async (req, res) => {
+  try {
+    const { startDate, endDate } = req.query;
+    const where = {
+      salonId: req.user.salonId,
+      status: 'COMPLETED',
+    };
+    if (startDate || endDate) {
+      where.startTime = {};
+      if (startDate) where.startTime.gte = new Date(startDate);
+      if (endDate) where.startTime.lte = new Date(endDate + 'T23:59:59');
+    }
+
+    const appointments = await prisma.appointment.findMany({
+      where,
+      include: {
+        staff: { include: { user: { select: { name: true } } } },
+        service: { select: { name: true, price: true } }
+      }
+    });
+
+    const staffMap = {};
+    appointments.forEach(apt => {
+      const staffId = apt.staffId;
+      if (!staffMap[staffId]) {
+        staffMap[staffId] = { name: apt.staff.user.name, appointments: 0, revenue: 0, services: {} };
+      }
+      staffMap[staffId].appointments++;
+      staffMap[staffId].revenue += apt.service.price;
+      const svcName = apt.service.name;
+      staffMap[staffId].services[svcName] = (staffMap[staffId].services[svcName] || 0) + 1;
+    });
+
+    const staffHistory = Object.values(staffMap).map(s => ({
+      ...s,
+      topService: Object.entries(s.services).sort((a, b) => b[1] - a[1])[0]?.[0] || '-',
+    }));
+
+    res.json(staffHistory);
+  } catch (error) {
+    res.status(500).json({ error: 'Erro ao buscar histórico de profissionais' });
+  }
+});
+
+// ============ REPORTS - DAILY BREAKDOWN ============
+
+app.get('/api/reports/daily', authenticateToken, async (req, res) => {
+  try {
+    const { startDate, endDate } = req.query;
+    const where = { salonId: req.user.salonId };
+    if (startDate || endDate) {
+      where.startTime = {};
+      if (startDate) where.startTime.gte = new Date(startDate);
+      if (endDate) where.startTime.lte = new Date(endDate + 'T23:59:59');
+    }
+
+    const appointments = await prisma.appointment.findMany({
+      where,
+      select: { startTime: true, status: true }
+    });
+
+    const dayMap = {};
+    appointments.forEach(apt => {
+      const day = apt.startTime.toISOString().split('T')[0];
+      if (!dayMap[day]) dayMap[day] = { date: day, total: 0, completed: 0, cancelled: 0 };
+      dayMap[day].total++;
+      if (apt.status === 'COMPLETED') dayMap[day].completed++;
+      if (apt.status === 'CANCELLED') dayMap[day].cancelled++;
+    });
+
+    res.json(Object.values(dayMap).sort((a, b) => a.date.localeCompare(b.date)));
+  } catch (error) {
+    res.status(500).json({ error: 'Erro ao buscar dados diários' });
+  }
+});
+
+// ============ REPORTS - SUMMARY ============
+
+app.get('/api/reports/summary', authenticateToken, async (req, res) => {
+  try {
+    const salonId = req.user.salonId;
+    const now = new Date();
+    const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
+    const monthEnd = new Date(now.getFullYear(), now.getMonth() + 1, 0, 23, 59, 59);
+    const today = new Date(); today.setHours(0,0,0,0);
+    const tomorrow = new Date(today); tomorrow.setDate(tomorrow.getDate() + 1);
+
+    const [totalAppointments, monthAppointments, totalCustomers, monthCustomers] = await Promise.all([
+      prisma.appointment.count({ where: { salonId } }),
+      prisma.appointment.findMany({
+        where: { salonId, status: 'COMPLETED', startTime: { gte: monthStart, lte: monthEnd } },
+        include: { service: { select: { price: true } } }
+      }),
+      prisma.customer.count({ where: { salonId } }),
+      prisma.customer.count({ where: { salonId, createdAt: { gte: monthStart } } }),
+    ]);
+
+    const monthRevenue = monthAppointments.reduce((s, a) => s + a.service.price, 0);
+    const ticketMedio = monthAppointments.length > 0 ? monthRevenue / monthAppointments.length : 0;
+
+    res.json({
+      totalAppointments,
+      monthAppointments: monthAppointments.length,
+      monthRevenue,
+      totalCustomers,
+      newCustomers: monthCustomers,
+      ticketMedio,
+    });
+  } catch (error) {
+    res.status(500).json({ error: 'Erro ao buscar resumo' });
+  }
+});
+
+// ============ SALON ROUTES ============
+
+app.get('/api/salon', authenticateToken, async (req, res) => {
+  try {
+    const salon = await prisma.salon.findUnique({ where: { id: req.user.salonId } });
+    res.json(salon);
+  } catch (error) {
+    res.status(500).json({ error: 'Erro ao buscar salão' });
+  }
+});
+
+app.put('/api/salon', authenticateToken, requireRole('ADMIN'), async (req, res) => {
+  try {
+    const { name, address, phone, email } = req.body;
+    const salon = await prisma.salon.update({
+      where: { id: req.user.salonId },
+      data: { name, address, phone, email },
+    });
+    await logAudit(req.user.sub, 'SALON_UPDATE', { salonId: salon.id }, req);
+    res.json(salon);
+  } catch (error) {
+    res.status(500).json({ error: 'Erro ao atualizar salão' });
+  }
+});
+
+// ============ SCHEDULE ROUTES ============
+
+app.get('/api/schedules', authenticateToken, async (req, res) => {
+  try {
+    const { staffId } = req.query;
+    const where = { staff: { salonId: req.user.salonId } };
+    if (staffId) where.staffId = staffId;
+
+    const schedules = await prisma.schedule.findMany({
+      where,
+      include: { staff: { include: { user: { select: { name: true } } } } },
+      orderBy: [{ dayOfWeek: 'asc' }, { startTime: 'asc' }],
+    });
+    res.json(schedules);
+  } catch (error) {
+    res.status(500).json({ error: 'Erro ao buscar horários' });
+  }
+});
+
+app.post('/api/schedules', authenticateToken, requireRole('ADMIN', 'RECEPTIONIST'), async (req, res) => {
+  try {
+    const { staffId, dayOfWeek, startTime, endTime, isAvailable } = req.body;
+    const schedule = await prisma.schedule.create({
+      data: { staffId, dayOfWeek, startTime, endTime, isAvailable: isAvailable !== false },
+    });
+    await logAudit(req.user.sub, 'SCHEDULE_CREATE', { scheduleId: schedule.id }, req);
+    res.status(201).json(schedule);
+  } catch (error) {
+    res.status(500).json({ error: 'Erro ao criar horário' });
+  }
+});
+
+app.put('/api/schedules/:id', authenticateToken, requireRole('ADMIN', 'RECEPTIONIST'), async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { dayOfWeek, startTime, endTime, isAvailable } = req.body;
+    const schedule = await prisma.schedule.update({
+      where: { id },
+      data: { dayOfWeek, startTime, endTime, isAvailable },
+    });
+    await logAudit(req.user.sub, 'SCHEDULE_UPDATE', { scheduleId: schedule.id }, req);
+    res.json(schedule);
+  } catch (error) {
+    res.status(500).json({ error: 'Erro ao atualizar horário' });
+  }
+});
+
+app.delete('/api/schedules/:id', authenticateToken, requireRole('ADMIN'), async (req, res) => {
+  try {
+    await prisma.schedule.delete({ where: { id: req.params.id } });
+    await logAudit(req.user.sub, 'SCHEDULE_DELETE', { scheduleId: req.params.id }, req);
+    res.json({ success: true });
+  } catch (error) {
+    res.status(500).json({ error: 'Erro ao excluir horário' });
+  }
+});
+
+// ============ EXPORT ROUTES ============
+
+app.get('/api/export/clients', authenticateToken, async (req, res) => {
+  try {
+    const clients = await prisma.customer.findMany({
+      where: { salonId: req.user.salonId },
+      orderBy: { name: 'asc' },
+    });
+    const header = 'Nome,Email,Telefone,Observações,Criado em\n';
+    const csv = clients.map(c =>
+      `"${c.name}","${c.email || ''}","${c.phone || ''}","${(c.notes || '').replace(/"/g, '""')}","${c.createdAt.toISOString().split('T')[0]}"`
+    ).join('\n');
+    res.setHeader('Content-Type', 'text/csv; charset=utf-8');
+    res.setHeader('Content-Disposition', 'attachment; filename=clientes.csv');
+    res.send('\uFEFF' + header + csv);
+  } catch (error) {
+    res.status(500).json({ error: 'Erro ao exportar clientes' });
+  }
+});
+
+app.get('/api/export/appointments', authenticateToken, async (req, res) => {
+  try {
+    const { startDate, endDate } = req.query;
+    const where = { salonId: req.user.salonId };
+    if (startDate || endDate) {
+      where.startTime = {};
+      if (startDate) where.startTime.gte = new Date(startDate);
+      if (endDate) where.startTime.lte = new Date(endDate + 'T23:59:59');
+    }
+    const appointments = await prisma.appointment.findMany({
+      where,
+      include: {
+        customer: { select: { name: true } },
+        service: { select: { name: true, price: true } },
+        staff: { include: { user: { select: { name: true } } } },
+      },
+      orderBy: { startTime: 'desc' },
+    });
+    const header = 'Data,Cliente,Serviço,Profissional,Preço,Status\n';
+    const csv = appointments.map(a =>
+      `"${a.startTime.toISOString().split('T')[0]}","${a.customer.name}","${a.service.name}","${a.staff.user.name}","${a.service.price}","${a.status}"`
+    ).join('\n');
+    res.setHeader('Content-Type', 'text/csv; charset=utf-8');
+    res.setHeader('Content-Disposition', 'attachment; filename=agendamentos.csv');
+    res.send('\uFEFF' + header + csv);
+  } catch (error) {
+    res.status(500).json({ error: 'Erro ao exportar agendamentos' });
   }
 });
 

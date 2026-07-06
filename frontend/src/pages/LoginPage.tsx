@@ -15,7 +15,6 @@ export default function LoginPage() {
     e.preventDefault()
     setError('')
     setIsLoading(true)
-
     try {
       await login(email, password)
       navigate('/dashboard')
@@ -28,15 +27,8 @@ export default function LoginPage() {
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-salon-black p-4">
-      {/* Background decorative elements */}
-      <div className="absolute inset-0 overflow-hidden">
-        <div className="absolute -top-40 -right-40 w-80 h-80 bg-gold-500/5 rounded-full blur-3xl"></div>
-        <div className="absolute -bottom-40 -left-40 w-80 h-80 bg-gold-500/5 rounded-full blur-3xl"></div>
-      </div>
-
-      <div className="w-full max-w-md relative z-10">
+      <div className="w-full max-w-md">
         <div className="bg-salon-dark border border-gold-500/20 rounded-2xl shadow-2xl p-8">
-          {/* Logo */}
           <div className="flex justify-center mb-6">
             <div className="w-16 h-16 rounded-full bg-gold-500 flex items-center justify-center">
               <Scissors size={32} className="text-salon-black" />

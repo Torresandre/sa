@@ -130,26 +130,31 @@
 
 ## 🔄 Tarefas em Progresso
 
-### 14) Relatórios básicos
-- **Estado:** 🔄 Parcial
-- Endpoint `GET /api/reports/dashboard` com dados reais (faturamento calculado)
-- Frontend com dashboard conectado à API
-- Falta: relatórios de services mais pedidos, histórico por profissional
+### 23) Relatórios básicos
+- **Estado:** ✅ Concluído
+- Endpoints: `GET /api/reports/dashboard`, `/top-services`, `/staff-history`, `/daily`, `/summary`
+- Frontend integrado com API real (sem dados mock)
+- Filtro por período (semana/mês/ano)
+- Tabela de histórico por profissional
+- Gráficos de barras com dados reais
 
-### 15) Painel Administrativo
-- **Estado:** 🔄 Parcial
-- Página de Admin com gestão de utilizadores (mock data)
-- Gestão de profissionais integrada com API
-- Falta: gestão de salão integrada, exportação de dados
+### 24) Painel Administrativo
+- **Estado:** ✅ Concluído
+- Gestão de profissionais integrada com API (ativar/desativar)
+- Gestão de serviços integrada com API (ativar/desativar)
+- Gestão de salão integrada com API (nome, endereço, telefone, email)
+- Exportação de dados em CSV (clientes e agendamentos)
+- 4 abas: Profissionais, Serviços, Salão, Exportar
 
----
+### 25) Agenda de Staff (horários)
+- **Estado:** ✅ Concluído
+- Endpoints CRUD: `GET/POST/PUT/DELETE /api/schedules`
+- Frontend: grade semanal com navegação (anterior/próximo/hoje)
+- Agendamentos reais exibidos nos slots de horário
+- Cores por status (agendado, confirmado, concluído, cancelado)
+- Legenda de profissionais
 
 ## ⏳ Tarefas Pendentes
-
-### 16) Agenda de Staff (horários)
-- **Estado:** ⏳ Pendente
-- Horários de trabalho por profissional; disponibilidade
-- Frontend SchedulePage com mock data
 
 ### 17) Confirmações por e-mail
 - **Estado:** ⏳ Pendente
@@ -168,8 +173,28 @@
 - GitHub Actions pipeline
 
 ### 21) Documentação
-- **Estado:** ⏳ Pendente
-- README completo com guia de instalação
+- **Estado:** ✅ Concluído
+- README completo com guia de instalação, endpoints e estrutura
+
+---
+
+## 🔄 Tarefas em Progresso
+
+### 22) Criptografia do Banco de Dados
+- **Estado:** ✅ Concluído
+- **Fase 1 - SSL/TLS:** ✅ Concluído
+  - Certificado auto-assinado gerado com OpenSSL
+  - `postgresql.conf`: `ssl = on`, `ssl_cert_file`, `ssl_key_file`
+  - `pg_hba.conf`: `hostssl` + `scram-sha-256`, rejeita conexões non-SSL
+  - Senha definida para postgres: `Sa1@lon2026!`
+  - `.env` atualizado com `sslmode=require`
+- **Fase 2 - Criptografia de colunas:** ✅ Concluído
+  - Extensão pgcrypto ativada no banco
+  - Serviço `encryption.js` com AES-256-CBC (IV + ciphertext)
+  - Middleware Prisma `encryption.js` para encrypt/decrypt automático
+  - Colunas criptografadas: `Customer.phone`, `Customer.email`, `Salon.phone`, `Salon.email`
+  - Dados legados em plaintext continuam funcionando (compatibilidade)
+- **Fase 3 - Criptografia em disco:** ⏳ Pendente (BitLocker)
 
 ---
 

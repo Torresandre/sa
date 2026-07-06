@@ -77,6 +77,8 @@ Sistema completo de agendamento e gestão para salão de beleza, desenvolvido pa
 - bcrypt (12 rounds)
 - Zod (validação)
 - Helmet, CORS, Rate Limiting
+- **Criptografia:** AES-256-CBC via Prisma middleware (colunas Customer.phone, Customer.email, Salon.phone, Salon.email)
+- **SSL/TLS:** Conexão PostgreSQL com `sslmode=require` (certificado auto-assinado)
 
 ## Instalação
 
@@ -192,7 +194,25 @@ sa/
 - `PUT /api/staff/:id` - Atualizar (ativar/desativar)
 
 ### Relatórios
-- `GET /api/reports/dashboard` - Estatísticas
+- `GET /api/reports/dashboard` - Estatísticas do dia
+- `GET /api/reports/summary` - Resumo mensal (faturamento, ticket médio, novos clientes)
+- `GET /api/reports/top-services` - Serviços mais pedidos (filtro por data)
+- `GET /api/reports/staff-history` - Histórico por profissional (filtro por data)
+- `GET /api/reports/daily` - Atendimentos por dia (filtro por data)
+
+### Salão
+- `GET /api/salon` - Dados do salão
+- `PUT /api/salon` - Atualizar salão (ADMIN)
+
+### Horários
+- `GET /api/schedules` - Listar horários
+- `POST /api/schedules` - Criar horário
+- `PUT /api/schedules/:id` - Atualizar horário
+- `DELETE /api/schedules/:id` - Excluir horário
+
+### Exportação
+- `GET /api/export/clients` - Exportar clientes (CSV)
+- `GET /api/export/appointments` - Exportar agendamentos (CSV)
 
 ## Licença
 
