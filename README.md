@@ -214,6 +214,101 @@ sa/
 - `GET /api/export/clients` - Exportar clientes (CSV)
 - `GET /api/export/appointments` - Exportar agendamentos (CSV)
 
+---
+
+## Deploy (Render + Neon) — Gratuito
+
+### Arquitetura
+
+```
+Frontend (Render Static)  →  Backend (Render Web Service)  →  Neon PostgreSQL
+     React/Vite                    Express/Prisma                 Free 0.5GB
+```
+
+### Passo 1 — Criar banco no Neon
+
+1. Acesse https://neon.tech e crie uma conta gratuita
+2. Crie um novo projeto (ex: `sa-salon`)
+3. Na página do projeto, copie a **connection string**:
+   ```
+   postgresql://neondb_owner:xxxx@ep-xxx.us-east-2.aws.neon.tech/sa_salao?sslmode=require
+   ```
+4. Guarde essa URL para usar no Render
+
+### Passo 2 — Criar conta no Render
+
+1. Acesse https://render.com e crie uma conta (pode usar GitHub login)
+2. Conecte seu repositório `Torresandre/sa`
+
+### Passo 3 — Deploy via Blueprint
+
+1. No Render, clique em **New +** → **Blueprint**
+2. Conecte o repositório GitHub `Torresandre/sa`
+3. O Render detectará o `automatic deployment: true` e criará os serviços automaticamente
+4. Aguarde o primeiro build (pode demorar alguns minutos)
+
+### Passo 4 — Configurar variáveis de ambiente
+
+#### Backend (`sa-backend`)
+
+No painel do serviço backend, vá em **Environment** e adicione:
+
+| Variável | Valor |
+|----------|-------|
+| `DATABASE_URL` | URL do Neon (copiada no Passo 1) |
+| `FRONTEND_URL` | `https://sa-frontend.onrender.com` |
+| `JWT_SECRET` | Gere um aleatório (ex: `openssl rand -hex 32`) |
+| `JWT_REFRESH_SECRET` | Gere outro aleatório |
+| `ENCRYPTION_KEY` | 32 caracteres (ex: `xK8m2pQ7vN3wR5tY9bC4dF6gH0jL2kM8`) |
+| `NODE_ENV` | `production` |
+
+> **Nota:** `JWT_SECRET`, `JWT_REFRESH_SECRET` e `ENCRYPTION_KEY` já terão valores gerados pelo `render.yaml`. Só precisa configurar `DATABASE_URL` e `FRONTEND_URL`.
+
+#### Frontend (`sa-frontend`)
+
+| Variável | Valor |
+|----------|-------|
+| `VITE_API_URL` | `https://sa-backend.onrender.com/api` |
+
+> **Importante:** Configure `VITE_API_URL` **antes** do build. Caso contrário, faça um redeploy manual.
+
+### Passo 5 — Seed de dados (opcional)
+
+Ap o deploy, acesse o console do Render (ou use `psql` via Neon) para rodar o seed:
+
+```bash
+# No terminal do Render (Shell do backend)
+npx prisma db seed
+```
+
+Ou conecte-se diretamente ao Neon e execute o SQL do seed.
+
+### Passo 6 — Verificar
+
+- Frontend: `https://sa-frontend.onrender.com`
+- Backend: `https://sa-backend.onrender.com/api/health`
+- Login: `admin@salon.com` / `admin123`
+
+### Limitações do Free Tier
+
+| Serviço | Limitação |
+|---------|-----------|
+| **Render Free** | 750h/mês, spin-down após 15min sem tráfego (~30s cold start) |
+| **Neon Free** | 0.5 GB armazenamento, compute 24/7 |
+
+### Variáveis de ambiente (referência)
+
+| Variável | Descrição | Onde usar |
+|----------|-----------|-----------|
+| `DATABASE_URL` | URL do PostgreSQL (Neon) | Backend |
+| `JWT_SECRET` | Segredo para assinatura de tokens | Backend |
+| `JWT_REFRESH_SECRET` | Segredo para refresh tokens | Backend |
+| `ENCRYPTION_KEY` | Chave AES-256 para criptografia de colunas | Backend |
+| `PORT` | Porta do servidor (Render define automaticamente) | Backend |
+| `NODE_ENV` | `production` ou `development` | Backend |
+| `FRONTEND_URL` | URL do frontend (para CORS) | Backend |
+| `VITE_API_URL` | URL da API (para o React) | Frontend (build) |
+
 ## Licença
 
 Projeto privado - Elaine Cabeleireiro
