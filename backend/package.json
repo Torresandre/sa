@@ -2,6 +2,9 @@
   "name": "sa-backend",
   "version": "1.0.0",
   "private": true,
+  "engines": {
+    "node": ">=18.0.0"
+  },
   "prisma": {
     "seed": "node prisma/seed.js"
   },
@@ -9,6 +12,7 @@
     "start": "node src/main.js",
     "start:dev": "node src/main.js",
     "dev": "node src/main.js",
+    "postinstall": "prisma generate",
     "prisma:generate": "prisma generate",
     "prisma:migrate": "prisma migrate dev",
     "prisma:seed": "node prisma/seed.js"
